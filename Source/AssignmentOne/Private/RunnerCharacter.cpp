@@ -10,6 +10,7 @@
 #include "InputMappingContext.h"
 #include "PaperFlipbook.h"
 #include "PaperFlipbookComponent.h"
+#include "RunnerHUD.h"
 
 ARunnerCharacter::ARunnerCharacter()
 {
@@ -41,14 +42,27 @@ void ARunnerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetAnimation(RunAnimation);
+
+	bIsGameOver = false;
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		EnableInput(PC);
+		PC->SetShowMouseCursor(false);
+		PC->SetInputMode(FInputModeGameOnly());
+	}
 }
 
 void ARunnerCharacter::PawnClientRestart()
 {
 	Super::PawnClientRestart();
 
-	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
+		EnableInput(PC);
+		PC->SetShowMouseCursor(false);
+		PC->SetInputMode(FInputModeGameOnly());
+
 		if (auto* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			if (GameplayContext) Subsystem->AddMappingContext(GameplayContext, 0);
@@ -141,5 +155,10 @@ void ARunnerCharacter::TriggerGameOver()
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		DisableInput(PC);
+
+		if (ARunnerHUD* HUD = Cast<ARunnerHUD>(PC->GetHUD()))
+		{
+			HUD->ShowGameOver();
+		}
 	}
 }

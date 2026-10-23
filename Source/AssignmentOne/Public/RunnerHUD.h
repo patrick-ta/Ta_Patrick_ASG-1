@@ -5,11 +5,11 @@
 #include "RunnerHUD.generated.h"
 
 class URunnerHUDWidget;
+class URunnerGameOverWidget;
 
 /**
- * HUD class that tracks and displays the number of obstacles passed.
- * Automatically draws the count via Canvas by default, and optionally
- * spawns a UMG widget if HUDWidgetClass is assigned.
+ * HUD class that tracks and displays the number of obstacles passed
+ * and displays the Game Over HUD when the player hits an obstacle.
  */
 UCLASS(Blueprintable)
 class ASSIGNMENTONE_API ARunnerHUD : public AHUD
@@ -38,20 +38,40 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	int32 GetObstaclesPassed() const { return ObstaclesPassed; }
 
+	// Displays the Game Over HUD and configures input/cursor
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void ShowGameOver();
+
+	// Restarts the current level
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void RestartLevel();
+
 protected:
 	// Number of obstacles successfully cleared
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
 	int32 ObstaclesPassed = 0;
 
-	// Optional UMG Widget class to create and display on screen
+	// Indicates if the game is over
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
+	bool bIsGameOver = false;
+
+	// Optional UMG Widget class to create and display in-game score
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
 	TSubclassOf<URunnerHUDWidget> HUDWidgetClass;
 
-	// Active instance of the UMG Widget
+	// Active instance of the in-game score widget
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	TObjectPtr<URunnerHUDWidget> HUDWidgetInstance;
 
-	// Whether to draw the score text via Canvas (active when no UMG widget is used)
+	// Optional UMG Widget class to display when the game is over
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	TSubclassOf<URunnerGameOverWidget> GameOverWidgetClass;
+
+	// Active instance of the Game Over widget
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	TObjectPtr<URunnerGameOverWidget> GameOverWidgetInstance;
+
+	// Whether to draw fallback canvas text when no UMG widget is used
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
 	bool bDrawCanvasHUD = true;
 };
