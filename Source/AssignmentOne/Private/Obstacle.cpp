@@ -3,7 +3,9 @@
 
 #include "Components/BoxComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "RunnerCharacter.h"
+#include "RunnerHUD.h"
 
 AObstacle::AObstacle()
 {
@@ -49,6 +51,32 @@ void AObstacle::Tick(float DeltaTime)
     AddActorWorldOffset(
         FVector(-MoveSpeed * DeltaTime, 0.0f, 0.0f)
     );
+
+    // Check if the obstacle has safely passed the player
+    if (!bHasPassedPlayer)
+    {
+        if (const APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        {
+            if (const APawn* PlayerPawn = PC->GetPawn())
+            {
+                if (GetActorLocation().X < PlayerPawn->GetActorLocation().X)
+                {
+                    bHasPassedPlayer = true;
+
+                    if (ARunnerHUD* HUD = Cast<ARunnerHUD>(PC->GetHUD()))
+                    {
+                        HUD->IncrementObstaclesPassed();
+                    }
+                }
+            }
+        }
+    }
+
+    // Clean up obstacle once it is far off screen to the left
+    if (GetActorLocation().X < DespawnXThreshold)
+    {
+        Destroy();
+    }
 }
 
 void AObstacle::OnObstacleOverlap(
@@ -62,6 +90,7 @@ void AObstacle::OnObstacleOverlap(
 {
     if (ARunnerCharacter* Runner = Cast<ARunnerCharacter>(OtherActor))
     {
+        bHasPassedPlayer = true;
         Runner->TriggerGameOver();
     }
 }

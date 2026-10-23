@@ -32,6 +32,14 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Obstacle")
     float MoveSpeed = 175.0f;
 
+    // Tracks if this obstacle has already been counted as passed
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Obstacle")
+    bool bHasPassedPlayer = false;
+
+    // X threshold behind the player where obstacles get destroyed
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Obstacle")
+    float DespawnXThreshold = -500.0f;
+
     // Called when another actor overlaps the obstacle
     UFUNCTION()
     void OnObstacleOverlap(
